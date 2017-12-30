@@ -17,13 +17,11 @@ namespace MyAorus
         {
             aorus = new MyAorusHandler();
             layout = CreateRandomizedLayout();
-            BatteryRunner(ref layout, Color.Red, Color.Green);
+            BatteryRunner(ref layout, Color.DarkRed, Color.DarkGreen);
         }
 
         static void BatteryRunner(ref Dictionary<AorusKeys, Color> layout, Color dischargedColor, Color chargedColor)
         {
-   
-
             while (true)
             {
                 ObjectQuery query = new ObjectQuery("Select * FROM Win32_Battery");
