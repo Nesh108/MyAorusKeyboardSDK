@@ -10,8 +10,8 @@ After contacting both Gigabyte and Aorus technical support and being told that a
 Pull requests and issues are welcome as this is a still very young repository.
 
 ## Requirements: ##
-**Windows Driver Kit:** https://developer.microsoft.com/windows/hardware/windows-driver-kit
-**Visual Studio 2017**
+- **Visual Studio 2017**
+- **Windows Driver Kit:** https://developer.microsoft.com/windows/hardware/windows-driver-kit
 
 ## Tested on ##
 - Aorus x5 v7 on Windows 10
