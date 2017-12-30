@@ -1,5 +1,5 @@
-# MyAorusKeyboard
-Aorus RGB Keyboard Library for C#
+# MyAorusKeyboardSDK
+Aorus RGB Keyboard SDK for C#
 
 ## Introduction ##
 The Aorus Fusion application provided with the Aorus series allows to set custom profiles, macros and select among default styles.
