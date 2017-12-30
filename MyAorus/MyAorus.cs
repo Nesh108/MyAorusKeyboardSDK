@@ -22,13 +22,15 @@ namespace MyAorus
 
         static void BatteryRunner(ref Dictionary<AorusKeys, Color> layout, Color dischargedColor, Color chargedColor)
         {
-            ObjectQuery query = new ObjectQuery("Select * FROM Win32_Battery");
-            ManagementObjectSearcher searcher = new ManagementObjectSearcher(query);
-
-            ManagementObjectCollection collection = searcher.Get();
+   
 
             while (true)
             {
+                ObjectQuery query = new ObjectQuery("Select * FROM Win32_Battery");
+                ManagementObjectSearcher searcher = new ManagementObjectSearcher(query);
+
+                ManagementObjectCollection collection = searcher.Get();
+
                 foreach (ManagementObject mo in collection)
                 {
                     foreach (PropertyData property in mo.Properties)
