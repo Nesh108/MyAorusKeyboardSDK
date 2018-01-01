@@ -12,7 +12,10 @@ namespace MyAorus
         static MyAorusHandler aorus;
         static int ThreadDelay = 60000;
         static Dictionary<AorusKeys, Color> layout;
+        static int selectedBrightness = 20;
         static int previousBatteryBlocks = 0;
+        static int[] batteryLevels = new int[] { 4, 10, 17, 20 };
+        static Color[] batteryLevelsColors = new Color[] { Color.Red, Color.Orange, Color.Green, Color.Blue };
 
         static void Main(string[] args)
         {
@@ -42,6 +45,16 @@ namespace MyAorus
                             if (previousBatteryBlocks != blocks)
                             {
                                 previousBatteryBlocks = blocks;
+                                int batteryLevel = 0;
+                                for(int i = 0; i < batteryLevels.Length; i++)
+                                {
+                                    if(batteryLevels[i] >= blocks)
+                                    {
+                                        batteryLevel = i;
+                                        break;
+                                    }
+                                }
+                                layout = SingleStaticColor(batteryLevelsColors[batteryLevel]);
                                 layout[AorusKeys.Escape] = blocks > 1 ? chargedColor : dischargedColor;
                                 layout[AorusKeys.F1] = blocks > 2 ? chargedColor : dischargedColor;
                                 layout[AorusKeys.F2] = blocks > 3 ? chargedColor : dischargedColor;
@@ -65,7 +78,7 @@ namespace MyAorus
                                 aorus.SetKeyboard((byte)keyboardProfile, layout);
 
                                 // + 1 Needed for selecting the correct profile
-                                aorus.SelectKeyboardLightLayout(keyboardProfile + 1);
+                                aorus.SelectKeyboardLightLayout(keyboardProfile + 1, selectedBrightness);
                                 break;
                             }
                         }
@@ -74,6 +87,7 @@ namespace MyAorus
                 Thread.Sleep(ThreadDelay);
             }
         }
+
         static Dictionary<AorusKeys, Color> CreateRandomizedLayout()
         {
             Dictionary<AorusKeys, Color> layout = new Dictionary<AorusKeys, Color>();
@@ -83,6 +97,21 @@ namespace MyAorus
                 layout[k] = Color.FromArgb(r.Next(0, 255), r.Next(0, 255), r.Next(0, 255), r.Next(0, 255));
             }
             return layout;
+        }
+
+        static Dictionary<AorusKeys, Color> SingleStaticColor(Color c)
+        {
+            Dictionary<AorusKeys, Color> layout = new Dictionary<AorusKeys, Color>();
+            foreach (AorusKeys k in Enum.GetValues(typeof(AorusKeys)))
+            {
+                layout[k] = c;
+            }
+            return layout;
+        }
+
+        static int RandomBrightness()
+        {
+            return new Random().Next(0, 100);
         }
     }
 }

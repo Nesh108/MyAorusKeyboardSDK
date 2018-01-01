@@ -169,7 +169,7 @@ namespace MyAorus
             Thread.Sleep(100);
         }
 
-        public void SelectKeyboardLightLayout(int customIndex)
+        public void SelectKeyboardLightLayout(int customIndex, int brightnessLevel)
         {
             byte[] numArray = new byte[70];
             for (int index = 0; index < 70; ++index)
@@ -195,7 +195,7 @@ namespace MyAorus
                     break;
             }
             numArray[4] = (byte)5;
-            numArray[5] = (byte)50;
+            numArray[5] = (byte)brightnessLevel;
             numArray[6] = (byte)2;
             numArray[7] = (byte)1;
             numArray[8] = (byte)0;
