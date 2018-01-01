@@ -12,7 +12,7 @@ namespace MyAorus
         static MyAorusHandler aorus;
         static int ThreadDelay = 60000;
         static Dictionary<AorusKeys, Color> layout;
-        static int previousBatteryCharge = 0;
+        static int previousBatteryBlocks = 0;
 
         static void Main(string[] args)
         {
@@ -37,11 +37,11 @@ namespace MyAorus
                         if (property.Name.Equals("EstimatedChargeRemaining"))
                         {
                             int batteryValue = int.Parse(property.Value.ToString());
+                            int blocks = batteryValue / 5;
                             Console.WriteLine("Current Battery: {0}%", batteryValue);
-                            if (previousBatteryCharge != batteryValue)
+                            if (previousBatteryBlocks != blocks)
                             {
-                                previousBatteryCharge = batteryValue;
-                                int blocks = batteryValue / 5;
+                                previousBatteryBlocks = blocks;
                                 layout[AorusKeys.Escape] = blocks > 1 ? chargedColor : dischargedColor;
                                 layout[AorusKeys.F1] = blocks > 2 ? chargedColor : dischargedColor;
                                 layout[AorusKeys.F2] = blocks > 3 ? chargedColor : dischargedColor;
