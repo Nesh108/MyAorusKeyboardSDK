@@ -10,8 +10,9 @@ namespace MyAorus
     {
         static int keyboardProfile = 1;
         static MyAorusHandler aorus;
-        static int ThreadDelay = 60000;
+        static int threadDelay = 60000;
         static Dictionary<AorusKeys, Color> layout;
+        static bool keepCurrentBrightness = true;
         static int selectedBrightness = 20;
         static int previousBatteryBlocks = 0;
         static int[] batteryLevels = new int[] { 4, 10, 17, 20 };
@@ -39,6 +40,10 @@ namespace MyAorus
                     {
                         if (property.Name.Equals("EstimatedChargeRemaining"))
                         {
+                            if (keepCurrentBrightness)
+                            {
+                                selectedBrightness = aorus.GetCurrentBrightness();
+                            }
                             int batteryValue = int.Parse(property.Value.ToString());
                             int blocks = batteryValue / 5;
                             Console.WriteLine("Current Battery: {0}%", batteryValue);
@@ -84,7 +89,7 @@ namespace MyAorus
                         }
                     }
                 }
-                Thread.Sleep(ThreadDelay);
+                Thread.Sleep(threadDelay);
             }
         }
 

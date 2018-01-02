@@ -264,6 +264,16 @@ namespace MyAorus
             Win32.HidD_SetFeature(this._deviceHandle_2016, ref numArray[0], 9);
         }
 
-
+        
+        public int GetCurrentBrightness()
+        {
+            byte[] Buffer = new byte[64];
+            for (int index = 0; index < 64; ++index)
+            {
+                Buffer[index] = (byte)0;
+            }
+            Win32.HidD_GetFeature(_deviceHandle_2016, ref Buffer[0], 9);
+            return Buffer[5];
+        }
     }
 }
