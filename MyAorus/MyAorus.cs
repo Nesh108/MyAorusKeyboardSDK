@@ -15,13 +15,12 @@ namespace MyAorus
         static bool keepCurrentBrightness = true;
         static int selectedBrightness = 20;
         static int previousBatteryBlocks = 0;
-        static int[] batteryLevels = new int[] { 4, 10, 17, 20 };
+        static int[] batteryLevels = new int[] { 4, 10, 17, 21 };
         static Color[] batteryLevelsColors = new Color[] { Color.Red, Color.Orange, Color.Green, Color.Blue };
 
         static void Main(string[] args)
         {
             aorus = new MyAorusHandler();
-            layout = CreateRandomizedLayout();
             BatteryRunner(ref layout, Color.DarkRed, Color.DarkGreen);
         }
 
@@ -45,7 +44,7 @@ namespace MyAorus
                                 selectedBrightness = aorus.GetCurrentBrightness();
                             }
                             int batteryValue = int.Parse(property.Value.ToString());
-                            int blocks = batteryValue / 5;
+                            int blocks = (batteryValue / 5) + 1;
                             Console.WriteLine("Current Battery: {0}%", batteryValue);
                             if (previousBatteryBlocks != blocks)
                             {
