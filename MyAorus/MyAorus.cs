@@ -16,7 +16,7 @@ namespace MyAorus
         private static int _selectedBrightness = 20;
         private static int _previousBatteryBlocks = 0;
         private static bool _previousChargingStatus = false;
-        private static readonly int[] BatteryLevels = { 3, 6, 9, 12, 15, 17, 19, 20 };
+        private static readonly int[] BatteryLevels = { 3, 6, 9, 12, 15, 17, 19, 21 };
         private static readonly Color[] BatteryLevelsColors = { Color.Red, Color.OrangeRed, Color.Orange, Color.Yellow, Color.GreenYellow, Color.Green, Color.DodgerBlue, Color.Blue };
         private static readonly Color BatteryChargingColor = Color.Purple;
         private static readonly bool ShowChargingStatus = true;
