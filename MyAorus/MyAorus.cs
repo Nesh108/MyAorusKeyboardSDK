@@ -8,22 +8,23 @@ namespace MyAorus
 {
     internal class MyAorus
     {
-        private static int keyboardProfile = 1;
-        private static MyAorusHandler aorus;
-        private static int threadDelay = 60000;
-        private static Dictionary<AorusKeys, Color> layout;
-        private static bool keepCurrentBrightness = true;
-        private static int selectedBrightness = 20;
-        private static int previousBatteryBlocks = 0;
-        private static bool previousChargingStatus = false;
-        private static int[] batteryLevels = new int[] { 4, 10, 17, 21 };
-        private static Color[] batteryLevelsColors = new Color[] { Color.Red, Color.Orange, Color.Green, Color.Blue };
-        private static bool showChargingStatus = true;
+        private static readonly int KeyboardProfile = 1;
+        private static MyAorusHandler _aorus;
+        private static readonly int ThreadDelay = 20000;
+        private static Dictionary<AorusKeys, Color> _layout;
+        private static readonly bool KeepCurrentBrightness = true;
+        private static int _selectedBrightness = 20;
+        private static int _previousBatteryBlocks = 0;
+        private static bool _previousChargingStatus = false;
+        private static readonly int[] BatteryLevels = { 3, 6, 9, 12, 15, 17, 19, 20 };
+        private static readonly Color[] BatteryLevelsColors = { Color.Red, Color.OrangeRed, Color.Orange, Color.Yellow, Color.GreenYellow, Color.Green, Color.DodgerBlue, Color.Blue };
+        private static readonly Color BatteryChargingColor = Color.Purple;
+        private static readonly bool ShowChargingStatus = true;
 
         private static void Main(string[] args)
         {
-            aorus = new MyAorusHandler();
-            BatteryRunner(ref layout, Color.DarkRed, Color.DarkGreen);
+            _aorus = new MyAorusHandler();
+            BatteryRunner(ref _layout, Color.DarkRed, Color.DarkGreen);
         }
 
         private static void BatteryRunner(ref Dictionary<AorusKeys, Color> layout, Color dischargedColor, Color chargedColor)
@@ -56,93 +57,93 @@ namespace MyAorus
                 }
 
                 UpdateKeyboardLayout(isBatteryCharging, batteryValue, dischargedColor, chargedColor);
-                Thread.Sleep(threadDelay);
+                Thread.Sleep(ThreadDelay);
             }
         }
 
         private static void UpdateKeyboardLayout(bool isBatteryCharging, int batteryValue, Color dischargedColor,
             Color chargedColor)
         {
-            if (keepCurrentBrightness)
+            if (KeepCurrentBrightness)
             {
-                selectedBrightness = aorus.GetCurrentBrightness();
+                _selectedBrightness = _aorus.GetCurrentBrightness();
             }
 
             int blocks = (batteryValue / 5) + 1;
 
             Console.WriteLine("Current Battery: {0}% - Status: {1} Charging", batteryValue,
                 isBatteryCharging ? "" : "Not");
-            if (previousBatteryBlocks != blocks || previousChargingStatus != isBatteryCharging)
+            if (_previousBatteryBlocks != blocks || _previousChargingStatus != isBatteryCharging)
             {
-                previousBatteryBlocks = blocks;
-                previousChargingStatus = isBatteryCharging;
+                _previousBatteryBlocks = blocks;
+                _previousChargingStatus = isBatteryCharging;
                 int batteryLevel = 0;
-                for (int i = 0; i < batteryLevels.Length; i++)
+                for (int i = 0; i < BatteryLevels.Length; i++)
                 {
-                    if (batteryLevels[i] >= blocks)
+                    if (BatteryLevels[i] >= blocks)
                     {
                         batteryLevel = i;
                         break;
                     }
                 }
 
-                layout = SingleStaticColor(batteryLevelsColors[batteryLevel]);
+                _layout = SingleStaticColor(BatteryLevelsColors[batteryLevel]);
 
-                if (showChargingStatus && isBatteryCharging)
+                if (ShowChargingStatus && isBatteryCharging)
                 {
-                    layout[AorusKeys.Escape] = Color.Indigo;
+                    _layout[AorusKeys.Escape] = BatteryChargingColor;
                 }
                 else
                 {
-                    layout[AorusKeys.Escape] = blocks > 1 ? chargedColor : dischargedColor;
+                    _layout[AorusKeys.Escape] = blocks > 1 ? chargedColor : dischargedColor;
                 }
-                layout[AorusKeys.F1] = blocks > 2 ? chargedColor : dischargedColor;
-                layout[AorusKeys.F2] = blocks > 3 ? chargedColor : dischargedColor;
-                layout[AorusKeys.F3] = blocks > 4 ? chargedColor : dischargedColor;
-                layout[AorusKeys.F4] = blocks > 5 ? chargedColor : dischargedColor;
-                layout[AorusKeys.F5] = blocks > 6 ? chargedColor : dischargedColor;
-                layout[AorusKeys.F6] = blocks > 7 ? chargedColor : dischargedColor;
-                layout[AorusKeys.F7] = blocks > 8 ? chargedColor : dischargedColor;
-                layout[AorusKeys.F8] = blocks > 9 ? chargedColor : dischargedColor;
-                layout[AorusKeys.F9] = blocks > 10 ? chargedColor : dischargedColor;
-                layout[AorusKeys.F10] = blocks > 11 ? chargedColor : dischargedColor;
-                layout[AorusKeys.F11] = blocks > 12 ? chargedColor : dischargedColor;
-                layout[AorusKeys.F12] = blocks > 13 ? chargedColor : dischargedColor;
-                layout[AorusKeys.Pause] = blocks > 14 ? chargedColor : dischargedColor;
-                layout[AorusKeys.Delete] = blocks > 15 ? chargedColor : dischargedColor;
-                layout[AorusKeys.Home] = blocks > 16 ? chargedColor : dischargedColor;
-                layout[AorusKeys.PageUp] = blocks > 17 ? chargedColor : dischargedColor;
-                layout[AorusKeys.PageDown] = blocks > 18 ? chargedColor : dischargedColor;
-                layout[AorusKeys.End] = blocks > 19 ? chargedColor : dischargedColor;
+                _layout[AorusKeys.F1] = blocks > 2 ? chargedColor : dischargedColor;
+                _layout[AorusKeys.F2] = blocks > 3 ? chargedColor : dischargedColor;
+                _layout[AorusKeys.F3] = blocks > 4 ? chargedColor : dischargedColor;
+                _layout[AorusKeys.F4] = blocks > 5 ? chargedColor : dischargedColor;
+                _layout[AorusKeys.F5] = blocks > 6 ? chargedColor : dischargedColor;
+                _layout[AorusKeys.F6] = blocks > 7 ? chargedColor : dischargedColor;
+                _layout[AorusKeys.F7] = blocks > 8 ? chargedColor : dischargedColor;
+                _layout[AorusKeys.F8] = blocks > 9 ? chargedColor : dischargedColor;
+                _layout[AorusKeys.F9] = blocks > 10 ? chargedColor : dischargedColor;
+                _layout[AorusKeys.F10] = blocks > 11 ? chargedColor : dischargedColor;
+                _layout[AorusKeys.F11] = blocks > 12 ? chargedColor : dischargedColor;
+                _layout[AorusKeys.F12] = blocks > 13 ? chargedColor : dischargedColor;
+                _layout[AorusKeys.Pause] = blocks > 14 ? chargedColor : dischargedColor;
+                _layout[AorusKeys.Delete] = blocks > 15 ? chargedColor : dischargedColor;
+                _layout[AorusKeys.Home] = blocks > 16 ? chargedColor : dischargedColor;
+                _layout[AorusKeys.PageUp] = blocks > 17 ? chargedColor : dischargedColor;
+                _layout[AorusKeys.PageDown] = blocks > 18 ? chargedColor : dischargedColor;
+                _layout[AorusKeys.End] = blocks > 19 ? chargedColor : dischargedColor;
 
 
 
-                aorus.SetKeyboard((byte)keyboardProfile, layout);
+                _aorus.SetKeyboard((byte)KeyboardProfile, _layout);
 
                 // + 1 Needed for selecting the correct profile
-                aorus.SelectKeyboardLightLayout(keyboardProfile + 1, selectedBrightness);
+                _aorus.SelectKeyboardLightLayout(KeyboardProfile + 1, _selectedBrightness);
             }
         }
 
         private static Dictionary<AorusKeys, Color> CreateRandomizedLayout()
         {
-            Dictionary<AorusKeys, Color> layout = new Dictionary<AorusKeys, Color>();
+            Dictionary<AorusKeys, Color> myLayout = new Dictionary<AorusKeys, Color>();
             Random r = new Random();
             foreach (AorusKeys k in Enum.GetValues(typeof(AorusKeys)))
             {
-                layout[k] = Color.FromArgb(r.Next(0, 255), r.Next(0, 255), r.Next(0, 255), r.Next(0, 255));
+                myLayout[k] = Color.FromArgb(r.Next(0, 255), r.Next(0, 255), r.Next(0, 255), r.Next(0, 255));
             }
-            return layout;
+            return myLayout;
         }
 
         private static Dictionary<AorusKeys, Color> SingleStaticColor(Color c)
         {
-            Dictionary<AorusKeys, Color> layout = new Dictionary<AorusKeys, Color>();
+            Dictionary<AorusKeys, Color> myLayout = new Dictionary<AorusKeys, Color>();
             foreach (AorusKeys k in Enum.GetValues(typeof(AorusKeys)))
             {
-                layout[k] = c;
+                myLayout[k] = c;
             }
-            return layout;
+            return myLayout;
         }
 
         private static int RandomBrightness()
