@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Drawing;
 using System.Management;
 using System.Threading;
@@ -8,26 +10,53 @@ namespace MyAorus
 {
     internal class MyAorus
     {
+        public static int ThreadDelay = 20000;
+        public static int[] BatteryLevels = { 3, 6, 9, 12, 15, 17, 19, 21 };
+        public static Color[] BatteryLevelsColors = { Color.Red, Color.OrangeRed, Color.Orange, Color.Yellow, Color.GreenYellow, Color.Green, Color.DodgerBlue, Color.Blue };
+        public static Color BatteryChargingColor = Color.Purple;
+        public static bool ShowChargingStatus = true;
+        public static bool KeepCurrentBrightness = true;
+        public static ArrayList MovieModeProcesses = new ArrayList(new string[] { });
+        public static int AllowedFullscreenOffset = 0;
+
         private static readonly int KeyboardProfile = 1;
         private static MyAorusHandler _aorus;
-        private static readonly int ThreadDelay = 20000;
         private static Dictionary<AorusKeys, Color> _layout;
-        private static readonly bool KeepCurrentBrightness = true;
-        private static int _selectedBrightness = 20;
+        private static int _selectedBrightness = 100;
         private static int _previousBatteryBlocks = 0;
         private static bool _previousChargingStatus = false;
-        private static readonly int[] BatteryLevels = { 3, 6, 9, 12, 15, 17, 19, 21 };
-        private static readonly Color[] BatteryLevelsColors = { Color.Red, Color.OrangeRed, Color.Orange, Color.Yellow, Color.GreenYellow, Color.Green, Color.DodgerBlue, Color.Blue };
-        private static readonly Color BatteryChargingColor = Color.Purple;
-        private static readonly bool ShowChargingStatus = true;
+        private static bool _isKeyboardInMovieMode = false;
 
-        private static void Main(string[] args)
+        private static void Main()
         {
+            Init();
             _aorus = new MyAorusHandler();
-            BatteryRunner(ref _layout, Color.DarkRed, Color.DarkGreen);
+            _aorus.SelectKeyboardLightLayout(KeyboardProfile + 1, _selectedBrightness);
+            BatteryRunner(Color.DarkRed, Color.DarkGreen);
         }
 
-        private static void BatteryRunner(ref Dictionary<AorusKeys, Color> layout, Color dischargedColor, Color chargedColor)
+        private static void Init()
+        {
+            _selectedBrightness = int.Parse(ConfigurationManager.AppSettings["default_brightness"]);
+            ThreadDelay = int.Parse(ConfigurationManager.AppSettings["thread_delay"]);
+            ShowChargingStatus = bool.Parse(ConfigurationManager.AppSettings["show_charging_status"]);
+            KeepCurrentBrightness = bool.Parse(ConfigurationManager.AppSettings["keep_current_brightness"]);
+            MovieModeProcesses = new ArrayList(ConfigurationManager.AppSettings["movie_mode_processes"].Split(';'));
+            AllowedFullscreenOffset = int.Parse(ConfigurationManager.AppSettings["allowed_fullscreen_offset"]);
+            BatteryChargingColor = Color.FromName(ConfigurationManager.AppSettings["battery_charging_color"]);
+            Console.WriteLine("-----------Configuration Loaded-----------\n" +
+                              "- Selected Brightness: {0}\n" +
+                              "- Thread Delay: {1}ms\n" +
+                              "- Show Charging Status: {2}\n" +
+                              "- Keep Current Brightness: {3}\n" +
+                              "- Movie Mode Processes: {4}\n" +
+                              "- Allowed Fullscreen Offset: {5}px\n" +
+                              "- Battery Charging Color: {6}\n" +
+                              "------------------------------------------",
+                _selectedBrightness, ThreadDelay, ShowChargingStatus, KeepCurrentBrightness, string.Join("|", MovieModeProcesses.ToArray()), AllowedFullscreenOffset, BatteryChargingColor.ToString());
+        }
+
+        private static void BatteryRunner(Color dischargedColor, Color chargedColor)
         {
             bool isBatteryCharging = false;
             int batteryValue = 0;
@@ -35,7 +64,6 @@ namespace MyAorus
             {
                 ObjectQuery query = new ObjectQuery("Select * FROM Win32_Battery");
                 ManagementObjectSearcher searcher = new ManagementObjectSearcher(query);
-
                 ManagementObjectCollection collection = searcher.Get();
 
                 foreach (ManagementObject mo in collection)
@@ -52,25 +80,41 @@ namespace MyAorus
                             batteryValue = int.Parse(property.Value.ToString());
                             break;
                         }
-
                     }
                 }
-
                 UpdateKeyboardLayout(isBatteryCharging, batteryValue, dischargedColor, chargedColor);
+                CheckFullscreenProcesses();
                 Thread.Sleep(ThreadDelay);
+            }
+        }
+
+        private static void CheckFullscreenProcesses()
+        {
+            // If process is fullscreen, turn off brightness, else turn it back on
+            if (FullscreenManager.IsForegroundFullScreen(MovieModeProcesses, AllowedFullscreenOffset))
+            {
+                if (!_isKeyboardInMovieMode)
+                {
+                    _aorus.SelectKeyboardLightLayout(KeyboardProfile + 1, 0);
+                    _isKeyboardInMovieMode = true;
+                }
+            }
+            else if (_isKeyboardInMovieMode)
+            {
+                _aorus.SelectKeyboardLightLayout(KeyboardProfile + 1, _selectedBrightness);
+                _isKeyboardInMovieMode = false;
             }
         }
 
         private static void UpdateKeyboardLayout(bool isBatteryCharging, int batteryValue, Color dischargedColor,
             Color chargedColor)
         {
-            if (KeepCurrentBrightness)
+            if (KeepCurrentBrightness && !_isKeyboardInMovieMode)
             {
                 _selectedBrightness = _aorus.GetCurrentBrightness();
             }
 
             int blocks = (batteryValue / 5) + 1;
-
             Console.WriteLine("Current Battery: {0}% - Status: {1} Charging", batteryValue,
                 isBatteryCharging ? "" : "Not");
             if (_previousBatteryBlocks != blocks || _previousChargingStatus != isBatteryCharging)
@@ -86,7 +130,8 @@ namespace MyAorus
                         break;
                     }
                 }
-
+                // Set color for the whole keyboard
+                batteryLevel = Math.Max(Math.Min(BatteryLevelsColors.Length - 1, batteryLevel), 0);
                 _layout = SingleStaticColor(BatteryLevelsColors[batteryLevel]);
 
                 if (ShowChargingStatus && isBatteryCharging)
@@ -97,6 +142,7 @@ namespace MyAorus
                 {
                     _layout[AorusKeys.Escape] = blocks > 1 ? chargedColor : dischargedColor;
                 }
+
                 _layout[AorusKeys.F1] = blocks > 2 ? chargedColor : dischargedColor;
                 _layout[AorusKeys.F2] = blocks > 3 ? chargedColor : dischargedColor;
                 _layout[AorusKeys.F3] = blocks > 4 ? chargedColor : dischargedColor;
@@ -116,24 +162,11 @@ namespace MyAorus
                 _layout[AorusKeys.PageDown] = blocks > 18 ? chargedColor : dischargedColor;
                 _layout[AorusKeys.End] = blocks > 19 ? chargedColor : dischargedColor;
 
-
-
                 _aorus.SetKeyboard((byte)KeyboardProfile, _layout);
 
                 // + 1 Needed for selecting the correct profile
                 _aorus.SelectKeyboardLightLayout(KeyboardProfile + 1, _selectedBrightness);
             }
-        }
-
-        private static Dictionary<AorusKeys, Color> CreateRandomizedLayout()
-        {
-            Dictionary<AorusKeys, Color> myLayout = new Dictionary<AorusKeys, Color>();
-            Random r = new Random();
-            foreach (AorusKeys k in Enum.GetValues(typeof(AorusKeys)))
-            {
-                myLayout[k] = Color.FromArgb(r.Next(0, 255), r.Next(0, 255), r.Next(0, 255), r.Next(0, 255));
-            }
-            return myLayout;
         }
 
         private static Dictionary<AorusKeys, Color> SingleStaticColor(Color c)
@@ -146,9 +179,15 @@ namespace MyAorus
             return myLayout;
         }
 
-        private static int RandomBrightness()
+        private static Dictionary<AorusKeys, Color> CreateRandomizedLayout()
         {
-            return new Random().Next(0, 100);
+            Dictionary<AorusKeys, Color> myLayout = new Dictionary<AorusKeys, Color>();
+            Random r = new Random();
+            foreach (AorusKeys k in Enum.GetValues(typeof(AorusKeys)))
+            {
+                myLayout[k] = Color.FromArgb(r.Next(0, 255), r.Next(0, 255), r.Next(0, 255), r.Next(0, 255));
+            }
+            return myLayout;
         }
     }
 }
