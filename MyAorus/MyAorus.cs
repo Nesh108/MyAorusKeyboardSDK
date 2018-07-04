@@ -26,11 +26,18 @@ namespace MyAorus
         private static int _previousBatteryBlocks = 0;
         private static bool _previousChargingStatus = false;
         private static bool _isKeyboardInMovieMode = false;
+        private static bool _isBatteryCharging = false;
+        private static int _batteryValue = 0;
+
+        private static string _prevMsg = "";
+
+        private static OBSHandler _obsHandler;
 
         private static void Main()
         {
             Init();
             _aorus = new MyAorusHandler();
+            _obsHandler = new OBSHandler();
             _aorus.SelectKeyboardLightLayout(KeyboardProfile + 1, _selectedBrightness);
             BatteryRunner(Color.DarkRed, Color.DarkGreen);
         }
@@ -58,33 +65,48 @@ namespace MyAorus
 
         private static void BatteryRunner(Color dischargedColor, Color chargedColor)
         {
-            bool isBatteryCharging = false;
-            int batteryValue = 0;
             while (true)
             {
-                ObjectQuery query = new ObjectQuery("Select * FROM Win32_Battery");
-                ManagementObjectSearcher searcher = new ManagementObjectSearcher(query);
-                ManagementObjectCollection collection = searcher.Get();
-
-                foreach (ManagementObject mo in collection)
+                if (!_obsHandler.IsConnected)
                 {
-                    foreach (PropertyData property in mo.Properties)
-                    {
-                        if (property.Name.Equals("BatteryStatus"))
-                        {
-                            isBatteryCharging = property.Value.ToString().Equals("2");
-                        }
+                    _obsHandler.Init();
+                }
+                else
+                {
+                    _obsHandler.CheckStatus();
+                }
 
-                        if (property.Name.Equals("EstimatedChargeRemaining"))
-                        {
-                            batteryValue = int.Parse(property.Value.ToString());
-                            break;
-                        }
+                MainLoop(dischargedColor, chargedColor, false);
+                Thread.Sleep(ThreadDelay);
+            }
+        }
+
+        public static void MainLoop(Color dischargedColor, Color chargedColor, bool forceRefresh)
+        {
+            ObjectQuery query = new ObjectQuery("Select * FROM Win32_Battery");
+            ManagementObjectSearcher searcher = new ManagementObjectSearcher(query);
+            ManagementObjectCollection collection = searcher.Get();
+
+            foreach (ManagementObject mo in collection)
+            {
+                foreach (PropertyData property in mo.Properties)
+                {
+                    if (property.Name.Equals("BatteryStatus"))
+                    {
+                        _isBatteryCharging = property.Value.ToString().Equals("2");
+                    }
+
+                    if (property.Name.Equals("EstimatedChargeRemaining"))
+                    {
+                        _batteryValue = int.Parse(property.Value.ToString());
+                        break;
                     }
                 }
-                UpdateKeyboardLayout(isBatteryCharging, batteryValue, dischargedColor, chargedColor);
-                CheckFullscreenProcesses();
-                Thread.Sleep(ThreadDelay);
+            }
+            CheckFullscreenProcesses();
+            if (!_isKeyboardInMovieMode)
+            {
+                UpdateKeyboardLayout(_isBatteryCharging, _batteryValue, dischargedColor, chargedColor, forceRefresh);
             }
         }
 
@@ -107,65 +129,74 @@ namespace MyAorus
         }
 
         private static void UpdateKeyboardLayout(bool isBatteryCharging, int batteryValue, Color dischargedColor,
-            Color chargedColor)
+            Color chargedColor, bool forceRefresh)
         {
-            if (KeepCurrentBrightness && !_isKeyboardInMovieMode)
+            if (!_isKeyboardInMovieMode)
             {
-                _selectedBrightness = _aorus.GetCurrentBrightness();
-            }
-
-            int blocks = (batteryValue / 5) + 1;
-            Console.WriteLine("Current Battery: {0}% - Status: {1} Charging", batteryValue,
-                isBatteryCharging ? "" : "Not");
-            if (_previousBatteryBlocks != blocks || _previousChargingStatus != isBatteryCharging)
-            {
-                _previousBatteryBlocks = blocks;
-                _previousChargingStatus = isBatteryCharging;
-                int batteryLevel = 0;
-                for (int i = 0; i < BatteryLevels.Length; i++)
+                if (KeepCurrentBrightness)
                 {
-                    if (BatteryLevels[i] >= blocks)
+                    _selectedBrightness = _aorus.GetCurrentBrightness();
+                }
+
+                int blocks = (batteryValue / 5) + 1;
+                string msg = String.Format("Current Battery: {0}% - Status: {1} Charging", batteryValue,
+                    isBatteryCharging ? "" : "Not");
+                if (!_prevMsg.Equals(msg))
+                {
+                    Console.WriteLine(msg);
+                    _prevMsg = msg;
+                }
+                if (forceRefresh || _previousBatteryBlocks != blocks || _previousChargingStatus != isBatteryCharging)
+                {
+                    _previousBatteryBlocks = blocks;
+                    _previousChargingStatus = isBatteryCharging;
+                    int batteryLevel = 0;
+                    for (int i = 0; i < BatteryLevels.Length; i++)
                     {
-                        batteryLevel = i;
-                        break;
+                        if (BatteryLevels[i] >= blocks)
+                        {
+                            batteryLevel = i;
+                            break;
+                        }
                     }
+
+                    // Set color for the whole keyboard
+                    batteryLevel = Math.Max(Math.Min(BatteryLevelsColors.Length - 1, batteryLevel), 0);
+                    _layout = SingleStaticColor(BatteryLevelsColors[batteryLevel]);
+
+                    if (ShowChargingStatus && isBatteryCharging)
+                    {
+                        _layout[AorusKeys.Escape] = BatteryChargingColor;
+                    }
+                    else
+                    {
+                        _layout[AorusKeys.Escape] = blocks > 1 ? chargedColor : dischargedColor;
+                    }
+
+                    _layout[AorusKeys.F1] = blocks > 2 ? chargedColor : dischargedColor;
+                    _layout[AorusKeys.F2] = blocks > 3 ? chargedColor : dischargedColor;
+                    _layout[AorusKeys.F3] = blocks > 4 ? chargedColor : dischargedColor;
+                    _layout[AorusKeys.F4] = blocks > 5 ? chargedColor : dischargedColor;
+                    _layout[AorusKeys.F5] = blocks > 6 ? chargedColor : dischargedColor;
+                    _layout[AorusKeys.F6] = blocks > 7 ? chargedColor : dischargedColor;
+                    _layout[AorusKeys.F7] = blocks > 8 ? chargedColor : dischargedColor;
+                    _layout[AorusKeys.F8] = blocks > 9 ? chargedColor : dischargedColor;
+                    _layout[AorusKeys.F9] = blocks > 10 ? chargedColor : dischargedColor;
+                    _layout[AorusKeys.F10] = blocks > 11 ? chargedColor : dischargedColor;
+                    _layout[AorusKeys.F11] = blocks > 12 ? chargedColor : dischargedColor;
+                    _layout[AorusKeys.F12] = blocks > 13 ? chargedColor : dischargedColor;
+                    _layout[AorusKeys.Pause] = blocks > 14 ? chargedColor : dischargedColor;
+                    _layout[AorusKeys.Delete] = blocks > 15 ? chargedColor : dischargedColor;
+                    _layout[AorusKeys.Home] = blocks > 16 ? chargedColor : dischargedColor;
+                    _layout[AorusKeys.PageUp] = blocks > 17 ? chargedColor : dischargedColor;
+                    _layout[AorusKeys.PageDown] = blocks > 18 ? chargedColor : dischargedColor;
+                    _layout[AorusKeys.End] = blocks > 19 ? chargedColor : dischargedColor;
+
+                    _aorus.SetKeyboard((byte)KeyboardProfile, _layout);
+
+                    // + 1 Needed for selecting the correct profile
+                    _aorus.SelectKeyboardLightLayout(KeyboardProfile + 1, _selectedBrightness);
                 }
-                // Set color for the whole keyboard
-                batteryLevel = Math.Max(Math.Min(BatteryLevelsColors.Length - 1, batteryLevel), 0);
-                _layout = SingleStaticColor(BatteryLevelsColors[batteryLevel]);
-
-                if (ShowChargingStatus && isBatteryCharging)
-                {
-                    _layout[AorusKeys.Escape] = BatteryChargingColor;
-                }
-                else
-                {
-                    _layout[AorusKeys.Escape] = blocks > 1 ? chargedColor : dischargedColor;
-                }
-
-                _layout[AorusKeys.F1] = blocks > 2 ? chargedColor : dischargedColor;
-                _layout[AorusKeys.F2] = blocks > 3 ? chargedColor : dischargedColor;
-                _layout[AorusKeys.F3] = blocks > 4 ? chargedColor : dischargedColor;
-                _layout[AorusKeys.F4] = blocks > 5 ? chargedColor : dischargedColor;
-                _layout[AorusKeys.F5] = blocks > 6 ? chargedColor : dischargedColor;
-                _layout[AorusKeys.F6] = blocks > 7 ? chargedColor : dischargedColor;
-                _layout[AorusKeys.F7] = blocks > 8 ? chargedColor : dischargedColor;
-                _layout[AorusKeys.F8] = blocks > 9 ? chargedColor : dischargedColor;
-                _layout[AorusKeys.F9] = blocks > 10 ? chargedColor : dischargedColor;
-                _layout[AorusKeys.F10] = blocks > 11 ? chargedColor : dischargedColor;
-                _layout[AorusKeys.F11] = blocks > 12 ? chargedColor : dischargedColor;
-                _layout[AorusKeys.F12] = blocks > 13 ? chargedColor : dischargedColor;
-                _layout[AorusKeys.Pause] = blocks > 14 ? chargedColor : dischargedColor;
-                _layout[AorusKeys.Delete] = blocks > 15 ? chargedColor : dischargedColor;
-                _layout[AorusKeys.Home] = blocks > 16 ? chargedColor : dischargedColor;
-                _layout[AorusKeys.PageUp] = blocks > 17 ? chargedColor : dischargedColor;
-                _layout[AorusKeys.PageDown] = blocks > 18 ? chargedColor : dischargedColor;
-                _layout[AorusKeys.End] = blocks > 19 ? chargedColor : dischargedColor;
-
-                _aorus.SetKeyboard((byte)KeyboardProfile, _layout);
-
-                // + 1 Needed for selecting the correct profile
-                _aorus.SelectKeyboardLightLayout(KeyboardProfile + 1, _selectedBrightness);
             }
         }
 
@@ -175,6 +206,28 @@ namespace MyAorus
             foreach (AorusKeys k in Enum.GetValues(typeof(AorusKeys)))
             {
                 myLayout[k] = c;
+            }
+
+            if (_obsHandler.IsStreaming)
+            {
+                Console.WriteLine("OBS: Setting color streaming...");
+                myLayout[AorusKeys.NumPad7] = _obsHandler.StreamingColor;
+                myLayout[AorusKeys.NumPad8] = _obsHandler.StreamingColor;
+                myLayout[AorusKeys.NumPad9] = _obsHandler.StreamingColor;
+                myLayout[AorusKeys.NumPad4] = _obsHandler.StreamingColor;
+                myLayout[AorusKeys.NumPad5] = _obsHandler.StreamingColor;
+                myLayout[AorusKeys.NumPad6] = _obsHandler.StreamingColor;
+            }
+
+            if (_obsHandler.IsRecording)
+            {
+                Console.WriteLine("OBS: Setting color recording...");
+                myLayout[AorusKeys.NumPad1] = _obsHandler.StreamingColor;
+                myLayout[AorusKeys.NumPad2] = _obsHandler.StreamingColor;
+                myLayout[AorusKeys.NumPad3] = _obsHandler.StreamingColor;
+                myLayout[AorusKeys.Right] = _obsHandler.StreamingColor;
+                myLayout[AorusKeys.NumPad0] = _obsHandler.StreamingColor;
+                myLayout[AorusKeys.NumPadDel] = _obsHandler.StreamingColor;
             }
             return myLayout;
         }
