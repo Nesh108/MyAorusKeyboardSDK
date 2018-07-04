@@ -210,7 +210,6 @@ namespace MyAorus
 
             if (_obsHandler.IsStreaming)
             {
-                Console.WriteLine("OBS: Setting color streaming...");
                 myLayout[AorusKeys.NumPad7] = _obsHandler.StreamingColor;
                 myLayout[AorusKeys.NumPad8] = _obsHandler.StreamingColor;
                 myLayout[AorusKeys.NumPad9] = _obsHandler.StreamingColor;
@@ -221,7 +220,6 @@ namespace MyAorus
 
             if (_obsHandler.IsRecording)
             {
-                Console.WriteLine("OBS: Setting color recording...");
                 myLayout[AorusKeys.NumPad1] = _obsHandler.StreamingColor;
                 myLayout[AorusKeys.NumPad2] = _obsHandler.StreamingColor;
                 myLayout[AorusKeys.NumPad3] = _obsHandler.StreamingColor;
