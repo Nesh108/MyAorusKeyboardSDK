@@ -69,30 +69,30 @@ GUID: `"4d1e55b2-f16f-11cf-88cb-001111000030"`
 1. Reset all 70 bytes
 1. BufferArray[1-64] = PictureMatrix[0-63]
 1. **Write Feature**
-1. *Sleep 100ms*
+1. *Sleep 65ms*
 1. BufferArray[1-64] = PictureMatrix[64-127]
 1. **Write Feature**
-1. *Sleep 100ms*
+1. *Sleep 65ms*
 1. BufferArray[1-64] = PictureMatrix[128-191]
 1. **Write Feature**
-1. *Sleep 100ms*
+1. *Sleep 65ms*
 1. BufferArray[1-64] = PictureMatrix[192-255]
 1. **Write Feature**
-1. *Sleep 100ms*
+1. *Sleep 65ms*
 1. BufferArray[1-64] = PictureMatrix[256-319]
 1. **Write Feature**
-1. *Sleep 100ms*
-1. BufferArray[1-64] = PictureMatrix[320-383]
-1. **Write Feature**
-1. *Sleep 100ms*
-1. BufferArray[1-64] = PictureMatrix[384-447]
-1. **Write Feature**
-1. *Sleep 100ms*
-1. BufferArray[1-64] = PictureMatrix[448-511]
-1. **Write Feature**
-1. *Sleep 100ms*
+2. *Sleep 65ms*
+3. BufferArray[1-64] = PictureMatrix[320-383]
+4. **Write Feature**
+5. *Sleep 65ms*
+6. BufferArray[1-64] = PictureMatrix[384-447]
+7. **Write Feature**
+8. *Sleep 65ms*
+9. BufferArray[1-64] = PictureMatrix[448-511]
+10. **Write Feature**
+11. *Sleep 65ms*
 
-**Note:** In the original library, the sleep seem to be crucial. 
+**Note:** On Windows, the sleep time seems to be crucial (around 65ms). 
 
 -----------------------------------------------
 
