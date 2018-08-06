@@ -14,6 +14,8 @@ namespace MyAorus
         public static int[] BatteryLevels = { 3, 6, 9, 12, 15, 17, 19, 21 };
         public static Color[] BatteryLevelsColors = { Color.Red, Color.OrangeRed, Color.Orange, Color.Yellow, Color.GreenYellow, Color.Green, Color.DodgerBlue, Color.Blue };
         public static Color BatteryChargingColor = Color.Purple;
+        public static Color BatteryChargedColor = Color.DarkGreen;
+        public static Color BatteryDischargedColor = Color.DarkRed;
         public static bool ShowChargingStatus = true;
         public static bool KeepCurrentBrightness = true;
         public static ArrayList MovieModeProcesses = new ArrayList(new string[] { });
@@ -39,7 +41,7 @@ namespace MyAorus
             _aorus = new MyAorusHandler();
             _obsHandler = new OBSHandler();
             _aorus.SelectKeyboardLightLayout(KeyboardProfile + 1, _selectedBrightness);
-            BatteryRunner(Color.DarkRed, Color.DarkGreen);
+            BatteryRunner();
         }
 
         private static void Init()
@@ -63,7 +65,7 @@ namespace MyAorus
                 _selectedBrightness, ThreadDelay, ShowChargingStatus, KeepCurrentBrightness, string.Join("|", MovieModeProcesses.ToArray()), AllowedFullscreenOffset, BatteryChargingColor.ToString());
         }
 
-        private static void BatteryRunner(Color dischargedColor, Color chargedColor)
+        private static void BatteryRunner()
         {
             while (true)
             {
@@ -76,12 +78,12 @@ namespace MyAorus
                     _obsHandler.CheckStatus();
                 }
 
-                MainLoop(dischargedColor, chargedColor, false);
+                MainLoop();
                 Thread.Sleep(ThreadDelay);
             }
         }
 
-        public static void MainLoop(Color dischargedColor, Color chargedColor, bool forceRefresh)
+        public static void MainLoop(bool forceRefresh = false)
         {
             ObjectQuery query = new ObjectQuery("Select * FROM Win32_Battery");
             ManagementObjectSearcher searcher = new ManagementObjectSearcher(query);
@@ -106,7 +108,7 @@ namespace MyAorus
             CheckFullscreenProcesses();
             if (!_isKeyboardInMovieMode)
             {
-                UpdateKeyboardLayout(_isBatteryCharging, _batteryValue, dischargedColor, chargedColor, forceRefresh);
+                UpdateKeyboardLayout(_isBatteryCharging, _batteryValue, BatteryDischargedColor, BatteryChargedColor, forceRefresh);
             }
         }
 

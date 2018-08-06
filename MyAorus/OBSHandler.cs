@@ -115,7 +115,7 @@ namespace MyAorus
         {
             IsRecording = b;
             Console.WriteLine("OBS: Recording " + (b ? "started" : "stopped"));
-            MyAorus.MainLoop(Color.DarkRed, Color.DarkGreen, true);
+            MyAorus.MainLoop(true);
         }
 
         private async void setStreamingStatus(bool b)
@@ -129,7 +129,7 @@ namespace MyAorus
             }
             else
             {
-                MyAorus.MainLoop(Color.DarkRed, Color.DarkGreen, true);
+                MyAorus.MainLoop(true);
             }
         }
 
@@ -141,7 +141,7 @@ namespace MyAorus
             }
             if (_obs.GetStreamingStatus().IsRecording != IsRecording)
             {
-                setStreamingStatus(_obs.GetStreamingStatus().IsRecording);
+                setRecordingStatus(_obs.GetStreamingStatus().IsRecording);
             }
         }
     }

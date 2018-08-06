@@ -1,9 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Threading;
 using AorusKeyboard;
-using System.Drawing;
-using System.Collections.Generic;
 
 namespace MyAorus
 {
@@ -24,7 +24,7 @@ namespace MyAorus
 
         public void SetKeyboardLightLayout(byte index, Dictionary<AorusKeys, Color> layout)
         {
-            foreach(var k in layout.Keys)
+            foreach (var k in layout.Keys)
             {
                 ModifySingleKeyLight(Helpers.GetIdFromKey(k), layout[k]);
             }
@@ -94,6 +94,8 @@ namespace MyAorus
 
         public void SetKeysMatrix(byte index)
         {
+            int sleep_time = 65;
+
             byte[] lpBuffer = new byte[70];
             for (int index1 = 0; index1 < 70; ++index1)
                 lpBuffer[index1] = (byte)0;
@@ -107,72 +109,57 @@ namespace MyAorus
                 lpBuffer[8] = (byte)((uint)lpBuffer[8] + (uint)lpBuffer[index1]);
             lpBuffer[8] = (byte)((uint)byte.MaxValue - (uint)lpBuffer[8]);
             Win32.HidD_SetFeature(_deviceHandle_2016, ref lpBuffer[0], 9);
-            Thread.Sleep(65);
+            Thread.Sleep(sleep_time);
 
             uint lpNumberOfBytesWritten = 0;
             for (int index1 = 0; index1 < 70; ++index1)
                 lpBuffer[index1] = (byte)0;
-            int num = 0;
             for (int index1 = 0; index1 < 64; ++index1)
                 lpBuffer[index1 + 1] = PictureMatrix[index1];
             if (!Win32.WriteFile(_deviceHandle_2016, lpBuffer, 65U, ref lpNumberOfBytesWritten, IntPtr.Zero))
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-            Thread.Sleep(100);
-            lpBuffer[0] = (byte)0;
-            num = 0;
+            Thread.Sleep(sleep_time);
             for (int index1 = 0; index1 < 64; ++index1)
                 lpBuffer[index1 + 1] = PictureMatrix[index1 + 64];
             if (!Win32.WriteFile(_deviceHandle_2016, lpBuffer, 65U, ref lpNumberOfBytesWritten, IntPtr.Zero))
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-            Thread.Sleep(100);
-            lpBuffer[0] = (byte)0;
-            num = 0;
+            Thread.Sleep(sleep_time);
             for (int index1 = 0; index1 < 64; ++index1)
                 lpBuffer[index1 + 1] = PictureMatrix[index1 + 128];
             if (!Win32.WriteFile(_deviceHandle_2016, lpBuffer, 65U, ref lpNumberOfBytesWritten, IntPtr.Zero))
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-            Thread.Sleep(100);
-            lpBuffer[0] = (byte)0;
-            num = 0;
+            Thread.Sleep(sleep_time);
             for (int index1 = 0; index1 < 64; ++index1)
                 lpBuffer[index1 + 1] = PictureMatrix[index1 + 192];
             if (!Win32.WriteFile(_deviceHandle_2016, lpBuffer, 65U, ref lpNumberOfBytesWritten, IntPtr.Zero))
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-            Thread.Sleep(100);
-            lpBuffer[0] = (byte)0;
-            num = 0;
+            Thread.Sleep(sleep_time);
             for (int index1 = 0; index1 < 64; ++index1)
                 lpBuffer[index1 + 1] = PictureMatrix[index1 + 256];
             if (!Win32.WriteFile(_deviceHandle_2016, lpBuffer, 65U, ref lpNumberOfBytesWritten, IntPtr.Zero))
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-            Thread.Sleep(100);
-            lpBuffer[0] = (byte)0;
-            num = 0;
+            Thread.Sleep(sleep_time);
             for (int index1 = 0; index1 < 64; ++index1)
                 lpBuffer[index1 + 1] = PictureMatrix[index1 + 320];
             if (!Win32.WriteFile(_deviceHandle_2016, lpBuffer, 65U, ref lpNumberOfBytesWritten, IntPtr.Zero))
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-            Thread.Sleep(100);
-            lpBuffer[0] = (byte)0;
-            num = 0;
+            Thread.Sleep(sleep_time);
             for (int index1 = 0; index1 < 64; ++index1)
                 lpBuffer[index1 + 1] = PictureMatrix[index1 + 384];
             if (!Win32.WriteFile(_deviceHandle_2016, lpBuffer, 65U, ref lpNumberOfBytesWritten, IntPtr.Zero))
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-            Thread.Sleep(100);
-            lpBuffer[0] = (byte)0;
-            num = 0;
+            Thread.Sleep(sleep_time);
             for (int index1 = 0; index1 < 64; ++index1)
                 lpBuffer[index1 + 1] = PictureMatrix[index1 + 448];
             if (!Win32.WriteFile(_deviceHandle_2016, lpBuffer, 65U, ref lpNumberOfBytesWritten, IntPtr.Zero))
                 Marshal.ThrowExceptionForHR(Marshal.GetHRForLastWin32Error());
-            Thread.Sleep(100);
+            Thread.Sleep(sleep_time);
         }
 
         public void SelectKeyboardLightLayout(int customIndex, int brightnessLevel)
         {
-            byte[] numArray = new byte[70];
-            for (int index = 0; index < 70; ++index)
+            byte[] numArray = new byte[9];
+            for (int index = 0; index < 9; ++index)
                 numArray[index] = (byte)0;
             numArray[1] = (byte)8;
             numArray[2] = (byte)0;
@@ -204,11 +191,11 @@ namespace MyAorus
             numArray[8] = (byte)((uint)byte.MaxValue - (uint)numArray[8]);
             Win32.HidD_SetFeature(this._deviceHandle_2016, ref numArray[0], 9);
         }
-        
+
         public void SetDefaultBreathingEffect()
         {
-            byte[] numArray = new byte[70];
-            for (int index = 0; index < 70; ++index)
+            byte[] numArray = new byte[9];
+            for (int index = 0; index < 9; ++index)
                 numArray[index] = (byte)0;
             numArray[1] = (byte)8;
             numArray[2] = (byte)0;
@@ -247,8 +234,8 @@ namespace MyAorus
 
         public void SetDefaultAllGreen()
         {
-            byte[] numArray = new byte[70];
-            for (int index = 0; index < 70; ++index)
+            byte[] numArray = new byte[9];
+            for (int index = 0; index < 9; ++index)
                 numArray[index] = (byte)0;
             numArray[1] = (byte)8;
             numArray[2] = (byte)0;
@@ -264,11 +251,11 @@ namespace MyAorus
             Win32.HidD_SetFeature(this._deviceHandle_2016, ref numArray[0], 9);
         }
 
-        
+
         public int GetCurrentBrightness()
         {
-            byte[] Buffer = new byte[64];
-            for (int index = 0; index < 64; ++index)
+            byte[] Buffer = new byte[9];
+            for (int index = 0; index < 9; ++index)
             {
                 Buffer[index] = (byte)0;
             }
