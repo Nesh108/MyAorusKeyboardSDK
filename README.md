@@ -13,6 +13,8 @@ Pull requests and issues are welcome as this is a still very young repository.
 - Showing Current Battery Percentage
 - Movie Mode when process is fullscreen (turn off the LEDs)
 - Support for Random Color Layouts
+- Support for OSB 
+    - Automatic recording when switching to specific scene
 
 ## Requirements: ##
 - **Visual Studio 2017**
@@ -30,9 +32,9 @@ Each key is defined in `PictureMatrix[960]`
 
 4 bytes (1 byte each field):
 1. Key Index [See Helpers.cs] (in bytes)
-1. Red Color value [0-255]
-1. Green Color value [0-255]
-1. Blue Color value [0-255]
+2. Red Color value [0-255]
+3. Green Color value [0-255]
+4. Blue Color value [0-255]
 
 -----------------------------------------------
 
