@@ -89,18 +89,18 @@ namespace MyAorus
             ManagementObjectSearcher searcher = new ManagementObjectSearcher(query);
             ManagementObjectCollection collection = searcher.Get();
 
-            foreach (ManagementObject mo in collection)
+            foreach (var o in collection)
             {
+                var mo = (ManagementObject)o;
                 foreach (PropertyData property in mo.Properties)
                 {
                     if (property.Name.Equals("BatteryStatus"))
                     {
                         _isBatteryCharging = property.Value.ToString().Equals("2");
                     }
-
-                    if (property.Name.Equals("EstimatedChargeRemaining"))
+                    else if (property.Name.Equals("EstimatedChargeRemaining"))
                     {
-                        _batteryValue = int.Parse(property.Value.ToString());
+                        _batteryValue = Math.Min(Math.Max(int.Parse(property.Value.ToString()), 0), 100);
                         break;
                     }
                 }
@@ -141,8 +141,7 @@ namespace MyAorus
                 }
 
                 int blocks = (batteryValue / 5) + 1;
-                string msg = String.Format("Current Battery: {0}% - Status: {1} Charging", batteryValue,
-                    isBatteryCharging ? "" : "Not");
+                string msg = $"Current Battery: {batteryValue}% - Status: {(isBatteryCharging ? "" : "Not")} Charging";
                 if (!_prevMsg.Equals(msg))
                 {
                     Console.WriteLine(msg);

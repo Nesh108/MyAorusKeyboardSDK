@@ -18,8 +18,7 @@ namespace MyAorus
 
         public OBSHandler()
         {
-            _obs = new OBSWebsocket();
-            _obs.WSTimeout = new TimeSpan(0, 0, 0, 30);
+            _obs = new OBSWebsocket { WSTimeout = new TimeSpan(0, 0, 0, 30) };
             _obs.Connected += onConnect;
             _obs.Disconnected += onDisconnect;
 
